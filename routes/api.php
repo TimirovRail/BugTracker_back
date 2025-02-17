@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\BugController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,3 +39,9 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/bugs', [BugController::class, 'index']);
+    Route::post('/bugs', [BugController::class, 'store']);
+    Route::put('/bugs/{bug}', [BugController::class, 'update']);
+    Route::delete('/bugs/{bug}', [BugController::class, 'destroy']);
+});
