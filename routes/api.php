@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BugController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\Auth\PasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,3 +47,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/bugs/{bug}', [BugController::class, 'update']);
     Route::delete('/bugs/{bug}', [BugController::class, 'destroy']);
 });
+Route::middleware('auth:api')->get('/users', function () {
+    return App\Models\User::all();  // Возвращаем всех пользователей
+});
+Route::middleware('auth:api')->get('/users', [UserController::class, 'index']);
+Route::middleware('auth:sanctum')->get('/users', [UserController::class, 'index']);
+Route::middleware('auth:sanctum')->get('/bugs/{bugId}/comments', [BugController::class, 'getComments']);
+Route::middleware('auth:sanctum')->post('/bugs/{bugId}/comments', [BugController::class, 'addComment']);
+
+
+Route::get('password/reset/{token}', function ($token) {
+    return view('auth.reset-password', ['token' => $token]);
+})->name('password.reset');
+
+Route::post('password/reset', [PasswordController::class, 'resetPassword']);
+Route::post('password/email', [PasswordController::class, 'sendResetLinkEmail']);
+

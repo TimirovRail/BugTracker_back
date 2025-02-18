@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bug;
+use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+
 
 class BugController extends Controller
 {
@@ -37,20 +39,46 @@ class BugController extends Controller
         }
 
         $bug = Bug::create([
-        'title' => $request->title,
-        'description' => $request->description,
-        'severity' => $request->severity,
-        'priority' => $request->priority,
-        'status' => $request->status,
-        'steps_to_reproduce' => $request->steps_to_reproduce,
-        'environment_info' => $request->environment_info,
-        'attachments' => $attachments,
-        'user_id' => auth()->id(),
-    ]);
+            'title' => $request->title,
+            'description' => $request->description,
+            'severity' => $request->severity,
+            'priority' => $request->priority,
+            'status' => $request->status,
+            'steps_to_reproduce' => $request->steps_to_reproduce,
+            'environment_info' => $request->environment_info,
+            'attachments' => $attachments,
+            'user_id' => auth()->id(),
+        ]);
 
         return response()->json($bug, 201);
     }
 
+    public function getComments($bugId)
+    {
+        $bug = Bug::findOrFail($bugId);
+        return $bug->comments()->get(); // Возвращаем комментарии
+    }
+
+    // Добавить комментарий к ошибке
+    public function addComment(Request $request, $bugId)
+    {
+        $bug = Bug::findOrFail($bugId);
+
+        $comment = new Comment();
+        $comment->content = $request->content;
+        $comment->user_id = auth()->user()->id; // Получаем текущего авторизованного пользователя
+        $bug->comments()->save($comment);
+
+        // Если есть файлы, прикрепляем их
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $path = $file->store('attachments');
+                $comment->attachments()->create(['path' => $path]);
+            }
+        }
+
+        return response()->json($comment, 201); // Возвращаем созданный комментарий
+    }
     public function update(Request $request, Bug $bug)
     {
         $this->authorize('update', $bug);
