@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BugController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\ProjectController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,10 +19,37 @@ use App\Http\Controllers\Auth\PasswordController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+Route::middleware('auth:api')->get('/user', function (Request $request) {
+    return $request->user();
+});
 
+Route::middleware('auth:api')->get('/users', [UserController::class, 'index']);
+Route::post('/users', [UserController::class, 'store']); 
+Route::put('/users/{id}', [UserController::class, 'update']);
+Route::delete('/users/{id}', [UserController::class, 'destroy']); 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::get('/bugs', [BugController::class, 'index']);
+Route::post('/bugs', [BugController::class, 'store']); 
+Route::put('/bugs/{id}', [BugController::class, 'update']); 
+Route::delete('/bugs/{id}', [BugController::class, 'destroy']); 
+
+Route::middleware('auth:api')->group(function () {
+    Route::get('/bugs/assigned', [BugController::class, 'getAssignedBugs']);
+    Route::put('/bugs/{bug}', [BugController::class, 'update']);
+});
+Route::middleware('auth:api')->group(function () {
+    Route::post('/bugs', [BugController::class, 'store']);
+});
+Route::middleware('auth:sanctum')->get('/bugs/assigned', [BugController::class, 'assignedBugs']);
+
+
+Route::post('/projects', [ProjectController::class, 'store']);
+Route::get('/projects', [ProjectController::class, 'index']);
+
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
@@ -48,7 +76,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/bugs/{bug}', [BugController::class, 'destroy']);
 });
 Route::middleware('auth:api')->get('/users', function () {
-    return App\Models\User::all();  // Возвращаем всех пользователей
+    return App\Models\User::all(); 
 });
 Route::middleware('auth:api')->get('/users', [UserController::class, 'index']);
 Route::middleware('auth:sanctum')->get('/users', [UserController::class, 'index']);

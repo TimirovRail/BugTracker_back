@@ -13,7 +13,6 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
-    // Регистрация
     public function register(Request $request)
     {
         $request->validate([
@@ -33,8 +32,6 @@ class AuthController extends Controller
         return response()->json(['message' => 'User registered successfully'], 201);
     }
 
-
-    // Вход
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -50,7 +47,6 @@ class AuthController extends Controller
         $tokenResult = $user->createToken('authToken');
         $accessToken = $tokenResult->plainTextToken;
 
-        // Генерация refresh-токена
         $refreshToken = Str::random(60);
         $user->update(['refresh_token' => hash('sha256', $refreshToken)]);
 
@@ -60,9 +56,6 @@ class AuthController extends Controller
             'refresh_token' => $refreshToken
         ]);
     }
-
-
-    // Восстановление пароля (запрос на сброс)
     public function forgotPassword(Request $request)
     {
         $request->validate(['email' => 'required|email']);
@@ -71,8 +64,6 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'Password reset link sent']);
     }
-
-    // Сброс пароля
     public function resetPassword(Request $request)
     {
         $request->validate([
@@ -95,7 +86,6 @@ class AuthController extends Controller
             : response()->json(['message' => 'Invalid token'], 400);
     }
 
-    // Выход
     public function logout(Request $request)
     {
         $request->user()->tokens()->delete();

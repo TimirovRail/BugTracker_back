@@ -10,8 +10,16 @@ class Bug extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title', 'description', 'severity', 'priority',
-        'status', 'steps_to_reproduce', 'environment_info', 'attachments', 'user_id'
+        'title',
+        'description',
+        'severity',
+        'priority',
+        'status',
+        'steps_to_reproduce',
+        'environment_info',
+        'attachments',
+        'user_id',
+        'assigned_to', 
     ];
 
     protected $casts = [
@@ -21,5 +29,9 @@ class Bug extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    public function assignedTo()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
     }
 }

@@ -15,7 +15,7 @@ class BugPolicy
     }
     public function create(User $user)
     {
-        // Разрешаем создание только менеджерам или администраторам
-        return in_array($user->role, ['manager', 'admin']);
+        // Разрешить создание ошибки только пользователям с определенной ролью
+        return $user->role === 'admin' || $user->role === 'developer';
     }
 }

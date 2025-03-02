@@ -10,9 +10,11 @@ use Illuminate\Support\Facades\Storage;
 
 class BugController extends Controller
 {
+
     public function index()
     {
-        return response()->json(Bug::with('user')->orderBy('created_at', 'desc')->get());
+        $bugs = Bug::with('assignedTo')->get();
+        return response()->json($bugs);
     }
 
     public function store(Request $request)
@@ -48,6 +50,7 @@ class BugController extends Controller
             'environment_info' => $request->environment_info,
             'attachments' => $attachments,
             'user_id' => auth()->id(),
+            'assigned_to' => $request->assignee, // Добавляем назначенного пользователя
         ]);
 
         return response()->json($bug, 201);
@@ -56,20 +59,17 @@ class BugController extends Controller
     public function getComments($bugId)
     {
         $bug = Bug::findOrFail($bugId);
-        return $bug->comments()->get(); // Возвращаем комментарии
+        return $bug->comments()->get();
     }
 
-    // Добавить комментарий к ошибке
     public function addComment(Request $request, $bugId)
     {
         $bug = Bug::findOrFail($bugId);
 
         $comment = new Comment();
         $comment->content = $request->content;
-        $comment->user_id = auth()->user()->id; // Получаем текущего авторизованного пользователя
+        $comment->user_id = auth()->user()->id;
         $bug->comments()->save($comment);
-
-        // Если есть файлы, прикрепляем их
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
                 $path = $file->store('attachments');
@@ -77,7 +77,7 @@ class BugController extends Controller
             }
         }
 
-        return response()->json($comment, 201); // Возвращаем созданный комментарий
+        return response()->json($comment, 201);
     }
     public function update(Request $request, Bug $bug)
     {
@@ -93,6 +93,23 @@ class BugController extends Controller
 
         $bug->delete();
         return response()->json(['message' => 'Ошибка удалена']);
+    }
+    public function getAssignedBugs()
+    {
+        try {
+            $user = auth()->user();
+            $bugs = Bug::where('assigned_to', $user->id)->get();
+            return response()->json($bugs);
+        } catch (\Exception $e) {
+            \Log::error('Ошибка при загрузке назначенных ошибок: ' . $e->getMessage());
+            return response()->json(['error' => 'Произошла ошибка при загрузке данных'], 500);
+        }
+    }
+    public function assignedBugs(Request $request)
+    {
+        $user = $request->user();
+        $bugs = Bug::where('assigned_to', $user->id)->get();
+        return response()->json($bugs);
     }
 }
 

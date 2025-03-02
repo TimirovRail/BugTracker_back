@@ -19,11 +19,8 @@ class AuthServiceProvider extends ServiceProvider
         Bug::class => BugPolicy::class,
     ];
 
-    /**
-     * Register any authentication / authorization services.
-     */
-    public function boot(): void
+    public function boot()
     {
-        //
+        $this->registerPolicies();
     }
 }
